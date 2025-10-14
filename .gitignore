@@ -1,5 +1,5 @@
-.idea
-help.md
-data.xlsx
-.venv
-__pycache__
+backend/.idea
+backend/help.md
+backend/data.xlsx
+backend/.venv
+backend/__pycache__
