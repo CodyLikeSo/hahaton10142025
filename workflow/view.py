@@ -55,7 +55,6 @@ async def upload_categories(db: AsyncSession = Depends(async_get_db)):
 
         required_db_columns = {"main_category", "sub_category", "priority", "audience", "reference_answer"}
         if not required_db_columns.issubset(df_renamed.columns):
-            # На всякий случай — но не должно случиться, если маппинг полный
             missing = required_db_columns - set(df_renamed.columns)
             raise HTTPException(status_code=500, detail=f"Ошибка маппинга колонок: {missing}")
 
