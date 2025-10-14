@@ -6,32 +6,22 @@ import { ChatInput } from "@/components/chat/ChatInput";
 import { HintsPanel } from "@/components/hints/HintsPanel";
 import { ResizablePanels } from "@/components/ui/ResizablePanels";
 import { mockChatData, Message } from "@/lib/mockData";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRef } from "react";
 
 export default function Home() {
-  const [clientMessages, setClientMessages] = useState<Message[]>(mockChatData.messages);
-  const [operatorMessages, setOperatorMessages] = useState<Message[]>(mockChatData.messages);
+  const [operatorMessages, setOperatorMessages] = useState<Message[]>([]);
   const [operatorInput, setOperatorInput] = useState("");
-  const [isClientCollapsed, setIsClientCollapsed] = useState(false);
+  const [queryInput, setQueryInput] = useState("");
+  const [showHints, setShowHints] = useState(false);
 
-  const handleClientMessage = (text: string) => {
-    const newMessage: Message = {
+  const handleQuery = (query: string) => {
+    const clientMessage: Message = {
       id: Date.now().toString(),
-      text,
+      text: query,
       sender: "client",
       timestamp: new Date(),
     };
-    setClientMessages(prev => [...prev, newMessage]);
-    
-    // Add operator's response to operator messages
-    const operatorResponse: Message = {
-      id: (Date.now() + 1).toString(),
-      text: "I understand your concern. Let me help you with that.",
-      sender: "operator",
-      timestamp: new Date(),
-    };
-    setOperatorMessages(prev => [...prev, newMessage, operatorResponse]);
+    setOperatorMessages(prev => [...prev, clientMessage]);
   };
 
   const handleOperatorMessage = (text: string) => {
@@ -42,98 +32,40 @@ export default function Home() {
       timestamp: new Date(),
     };
     setOperatorMessages(prev => [...prev, newMessage]);
-    
-    // Add client's response to client messages
-    const clientResponse: Message = {
-      id: (Date.now() + 1).toString(),
-      text: "Thank you for your help!",
-      sender: "client",
-      timestamp: new Date(),
-    };
-    setClientMessages(prev => [...prev, newMessage, clientResponse]);
   };
 
   const handleHintSelect = (text: string) => {
     setOperatorInput(text);
+    // focus the operator input textarea when a hint is selected
+    if (operatorInputRef.current) {
+      operatorInputRef.current.focus();
+    }
   };
 
-  if (isClientCollapsed) {
-    return (
-      <div className="h-screen w-screen bg-black dark overflow-hidden p-6">
-        <div className="h-full w-full">
-          {/* Operator Chat - Full Width */}
-          <div className="flex flex-col bg-gray-900 rounded-xl border border-gray-700 overflow-hidden h-full">
-            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800 flex-shrink-0">
-              <div>
-                <h2 className="text-lg font-semibold text-white">Operator Chat</h2>
-                <div className="text-xs text-gray-400 mt-1">{mockChatData.category}</div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsClientCollapsed(false)}
-                className="text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </div>
-            <ChatContainer
-              messages={operatorMessages}
-              category={mockChatData.category}
-              title=""
-              isClientView={false}
-            />
-            <div className="flex-shrink-0">
-              <HintsPanel
-                hints={mockChatData.hints}
-                onHintSelect={handleHintSelect}
-              />
-              <ChatInput
-                onSendMessage={handleOperatorMessage}
-                placeholder="Type your message..."
-                initialValue={operatorInput}
-                onValueChange={setOperatorInput}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const toggleHints = () => setShowHints(s => !s);
+  const operatorInputRef = useRef<HTMLTextAreaElement | null>(null);
 
   return (
-    <div className="h-screen w-screen bg-black dark overflow-hidden p-6">
-      <div className="h-full w-full">
-        <ResizablePanels initialSizes={[50, 50]} minSize={20}>
-          {/* Client Chat */}
+    <div className="h-screen w-screen bg-black dark overflow-auto">
+      <div className="h-full w-full p-6">
+        <ResizablePanels initialSizes={[30, 70]} minSize={20}>
+          {/* Left Panel - Query Panel */}
           <div className="flex flex-col bg-gray-900 rounded-xl border border-gray-700 overflow-hidden h-full">
-            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800 flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsClientCollapsed(true)}
-                  className="text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <div>
-                  <h2 className="text-lg font-semibold text-white">Client Chat</h2>
-                  <div className="text-xs text-gray-400 mt-1">{mockChatData.category}</div>
-                </div>
+            <div className="flex items-center justify-center p-4 border-b border-gray-700 bg-gray-800 flex-shrink-0">
+              <div>
+                <h2 className="text-lg font-semibold text-white">Ask a question</h2>
+                <div className="text-xs text-gray-400 mt-1">Send to operator</div>
               </div>
             </div>
-            <ChatContainer
-              messages={clientMessages}
-              category={mockChatData.category}
-              title=""
-              isClientView={true}
-            />
-            <div className="flex-shrink-0">
-              <ChatInput
-                onSendMessage={handleClientMessage}
-                placeholder="Type your message..."
-              />
+            <div className="flex-1 flex items-center justify-center p-4">
+              <div className="w-full">
+                <ChatInput
+                  onSendMessage={handleQuery}
+                  placeholder="Type your question..."
+                  initialValue={queryInput}
+                  onValueChange={setQueryInput}
+                />
+              </div>
             </div>
           </div>
 
@@ -152,15 +84,20 @@ export default function Home() {
               isClientView={false}
             />
             <div className="flex-shrink-0">
-              <HintsPanel
-                hints={mockChatData.hints}
-                onHintSelect={handleHintSelect}
-              />
+              {showHints && (
+                <HintsPanel
+                  hints={mockChatData.hints}
+                  onHintSelect={handleHintSelect}
+                />
+              )}
               <ChatInput
                 onSendMessage={handleOperatorMessage}
                 placeholder="Type your message..."
                 initialValue={operatorInput}
                 onValueChange={setOperatorInput}
+                isSparkleOpen={showHints}
+                onToggleSparkle={toggleHints}
+                inputRef={operatorInputRef}
               />
             </div>
           </div>

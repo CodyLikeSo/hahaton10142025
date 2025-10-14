@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useLayoutEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Message } from "@/lib/mockData";
 import { ChatMessage } from "./ChatMessage";
@@ -14,28 +14,43 @@ interface ChatContainerProps {
 
 export function ChatContainer({ messages, category, title, isClientView = false }: ChatContainerProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const lastMessageRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
+  useLayoutEffect(() => {
     const scrollToBottom = () => {
+      // Preferred: scroll the last message into view (works well with dynamic heights)
+      if (lastMessageRef.current) {
+        try {
+          lastMessageRef.current.scrollIntoView({ behavior: "auto", block: "end" });
+          return;
+        } catch (e) {
+          // fall through to manual scroll if scrollIntoView fails
+        }
+      }
+
+      // Fallback: set scrollTop on the Radix viewport
       if (scrollAreaRef.current) {
         const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
         if (scrollContainer) {
-          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+          (scrollContainer as HTMLElement).scrollTop = (scrollContainer as HTMLElement).scrollHeight;
         }
       }
     };
 
-    setTimeout(scrollToBottom, 0);
+    // Run synchronously after DOM mutations so initial mocked messages align bottom
+    scrollToBottom();
   }, [messages]);
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {/* Messages */}
       <ScrollArea ref={scrollAreaRef} className="flex-1 bg-gray-900">
-        <div className="flex flex-col justify-end h-full p-4 space-y-2">
-          {messages.map((message) => (
-            <ChatMessage key={message.id} message={message} isClientView={isClientView} />
+        <div className="flex flex-col h-full pt-4 px-4 pb-6 gap-2">
+          {messages.map((message, idx) => (
+            <div key={message.id} ref={idx === messages.length - 1 ? lastMessageRef : undefined}>
+              <ChatMessage message={message} isClientView={isClientView} />
+            </div>
           ))}
         </div>
       </ScrollArea>

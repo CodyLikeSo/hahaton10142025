@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send } from "lucide-react";
+import { Send, Sparkle } from "lucide-react";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -11,6 +11,12 @@ interface ChatInputProps {
   disabled?: boolean;
   initialValue?: string;
   onValueChange?: (value: string) => void;
+  // Controlled sparkle (optional). If provided, ChatInput will use these props
+  // to toggle the global HintsPanel instead of showing its own tooltip.
+  isSparkleOpen?: boolean;
+  onToggleSparkle?: () => void;
+  // Optional external ref to focus the textarea
+  inputRef?: React.RefObject<HTMLTextAreaElement | null>;
 }
 
 export function ChatInput({ 
@@ -18,9 +24,13 @@ export function ChatInput({
   placeholder = "Type your message...", 
   disabled = false,
   initialValue = "",
-  onValueChange
+  onValueChange,
+  isSparkleOpen: isSparkleOpenProp,
+  onToggleSparkle
+  , inputRef
 }: ChatInputProps) {
   const [message, setMessage] = useState(initialValue);
+  const [isSparkleOpenLocal, setIsSparkleOpenLocal] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Update internal state when external value changes
@@ -45,6 +55,16 @@ export function ChatInput({
     }
   };
 
+  const toggleSparkle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // If parent provided a controlled toggle, use that. Otherwise toggle local state.
+    if (typeof onToggleSparkle === "function") {
+      onToggleSparkle();
+    } else {
+      setIsSparkleOpenLocal((s) => !s);
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setMessage(value);
@@ -64,9 +84,49 @@ export function ChatInput({
   }, [message]);
 
   return (
-    <div className="flex gap-2 p-4 border-t border-gray-700 bg-gray-800">
+    <div className="flex gap-2 p-4 border-t border-gray-700 bg-gray-800 items-end">
+      {/* Sparkle toggle button + tooltip */}
+      <div className="relative flex-shrink-0">
+        <Button
+          onClick={toggleSparkle}
+          type="button"
+          aria-pressed={
+            typeof isSparkleOpenProp === "boolean" ? isSparkleOpenProp : isSparkleOpenLocal
+          }
+          aria-expanded={
+            typeof isSparkleOpenProp === "boolean" ? isSparkleOpenProp : isSparkleOpenLocal
+          }
+          className={`w-[40px] h-[40px] p-0 rounded-lg transition-colors ${
+            (typeof isSparkleOpenProp === "boolean" ? isSparkleOpenProp : isSparkleOpenLocal)
+              ? 'bg-white text-black'
+              : 'bg-gray-700 text-white hover:bg-gray-600'
+          }`}
+        >
+          <Sparkle className="h-4 w-4" />
+        </Button>
+
+        {/* Only show the local tooltip when this component is uncontrolled for sparkle */}
+        {typeof isSparkleOpenProp === "undefined" && isSparkleOpenLocal && (
+          <div className="absolute right-0 bottom-full mb-2 w-64 bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-lg z-10">
+            <div className="text-sm text-gray-200">Sparkle options or suggestions go here.</div>
+            {/* Add interactive content here as needed */}
+          </div>
+        )}
+      </div>
+
       <Textarea
-        ref={textareaRef}
+        ref={(el: HTMLTextAreaElement) => {
+          // wire internal ref for resize behavior
+          textareaRef.current = el;
+          // and wired external ref if provided
+          if (inputRef) {
+            try {
+              (inputRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = el;
+            } catch (e) {
+              // ignore if inputRef is a callback ref or otherwise
+            }
+          }
+        }}
         value={message}
         onChange={handleChange}
         onKeyDown={handleKeyDown}

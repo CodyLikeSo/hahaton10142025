@@ -17,7 +17,7 @@ export function HintsPanel({ hints, onHintSelect }: HintsPanelProps) {
   const displayedHints = showAll ? hints : hints.slice(0, 2);
 
   return (
-    <div className="p-4 border-b border-gray-700 bg-gray-800">
+    <div className="p-4 border-b border-gray-700 bg-gray-800 overflow-auto max-h-72">
       <div className="space-y-2">
         <h3 className="text-sm font-medium text-white mb-2">AI Suggestions</h3>
         {displayedHints.map((hint) => (
