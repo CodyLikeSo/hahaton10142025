@@ -19,19 +19,32 @@ def hello_world():
     return {"message": "Hello, World!"}
 
 
+import time
+from fastapi import HTTPException
+
 @router.post("/request/")
 def request_endpoint(request: RequestModel):
+    start_total = time.time()  # Начало всего запроса
+
     try:
+        send_telegram_log(f'Начало запроса {request.text}...')
         # 1. Валидация
         validated_text = validate_string(request.text)
 
-        # 2. Поиск в Qdrant
+        # 2. Поиск в Qdrant — замер времени
+        start_qdrant = time.time()
         options = search_in_qdrant(query=validated_text, limit=5)
+        end_qdrant = time.time()
+        vector_db_time = end_qdrant - start_qdrant
+
         if not options:
             raise HTTPException(status_code=404, detail="No relevant answers found")
+        
+        send_telegram_log('Нашли options. Ждем ответа от qwen...')
 
         # 3. Попытка запроса к LLM
         model_answer = None
+        qwen_answer_time = None
         try:
             candidates_text = "\n".join(
                 f"- id: {opt['id']}, вопрос: \"{opt['payload']['Пример вопроса']}\""
@@ -58,31 +71,44 @@ def request_endpoint(request: RequestModel):
                 + "\n\nКакой id наиболее точно соответствует вопросу пользователя?"
             )
 
+            start_qwen = time.time()
             llm_response = ask_qwen(question=question, prompt=prompt, key=SECRET_KEY)
+            end_qwen = time.time()
+            qwen_answer_time = end_qwen - start_qwen
 
-            # Извлекаем ID
             import re
-
             match = re.search(r"\d+", llm_response)
             if match:
                 selected_id = int(match.group())
-                # Проверяем, что ID есть в options
                 if any(opt["id"] == selected_id for opt in options):
                     model_answer = selected_id
 
         except (RateLimitError, RuntimeError, Exception):
-            # Любая ошибка LLM → model_answer остаётся None
-            pass
+            send_telegram_log('qwen так и не ответил. А жаль')
 
-        # 4. Ответ: всегда возвращаем options + ID от модели (если есть)
-        send_telegram_log(f"options: {options}, model_answer: {model_answer}")
+        end_total = time.time()
+
+        send_telegram_log(f"finish - {end_total}\nduration_total - {end_total - start_total}\n qwen_answer_time - {qwen_answer_time}\n vector_db_time - {vector_db_time}")
 
         return {
             "options": options,
-            "model_answer": model_answer,  # может быть int или None
+            "model_answer": model_answer,
+            "start": start_total,
+            "finish": end_total,
+            "duration_total": end_total - start_total,
+            "qwen_answer_time": qwen_answer_time,
+            "vector_db_time": vector_db_time,
         }
 
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"Validation error: {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+        end_total = time.time()
+        return {
+            "options": [],
+            "model_answer": None,
+            "start": start_total,
+            "finish": end_total,
+            "duration_total": end_total - start_total,
+            "qwen_answer_time": None,
+            "vector_db_time": vector_db_time if 'vector_db_time' in locals() else None,
+            "error": str(e),
+        }

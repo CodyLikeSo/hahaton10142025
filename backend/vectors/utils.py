@@ -2,6 +2,11 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
 import openai
 import json
+from collections import Counter
+import re
+
+from config import KEYWORDS_SET
+
 
 embed = openai.Client(
     base_url="https://llm.t1v.scibox.tech/v1", api_key="sk-iXC2N_CPmS97ROX9ZXLDTw"
@@ -10,7 +15,7 @@ qdrant = QdrantClient(url="http://localhost:52068")
 model = "bge-m3"
 COLLECTION_NAME = "somebody_once_told_me"
 CSV_PATH = "./data.csv"
-import csv  # <-- добавили импорт
+import csv
 
 
 def _hash(x: str) -> int:
@@ -50,36 +55,73 @@ def search(text: str, take: int) -> list[dict]:
 
 def search_in_qdrant(query: str, limit: int = 5) -> list[dict]:
     """
-    {
-    "answer":
-        [
-            {
-            "id": 12355308822681901000,
-            "score": 0.5829244,
-            "payload":
-                {
-                    "Основная категория": "Продукты - Карты",
-                    "Подкатегория": "Карты рассрочки - ЧЕРЕПАХА",
-                    "Пример вопроса": "Как погашать долг по ЧЕРЕПАХЕ?",
-                    "Приоритет": "высокий",
-                    "Целевая аудитория": "новые клиенты",
-                    "Шаблонный ответ": "Погашение можно осуществлять через интернет-банк/мобильное приложение, банкоматы, отделения банка, ЕРИП и переводами с других карт."
-                }
-            },
-        ]
-    }
-
+    Выполняет гибридный поиск: векторный + ключевые слова.
+    Возвращает результаты, отсортированные по final_score = 0.7*vector + 0.3*keyword.
     """
+
+
+    # Нормализуем запрос
+    query_lower = query.lower()
+
+    # Получаем вектор и делаем векторный поиск
     vector = get_embedding(query)
     try:
         hits = qdrant.search(
-            collection_name=COLLECTION_NAME, query_vector=vector, limit=limit
+            collection_name=COLLECTION_NAME, query_vector=vector, limit=limit * 2  # берём чуть больше для реранкинга
         )
-        return [
-            {"id": hit.id, "score": hit.score, "payload": hit.payload} for hit in hits
-        ]
     except Exception as e:
         return [{"error": str(e)}]
+
+    # Подготовим результаты с гибридным скором
+    results = []
+    for hit in hits:
+        payload = hit.payload
+
+        # Собираем текст из payload для анализа ключевых слов
+        # Можно включить и вопрос, и ответ — зависит от твоей задачи
+        doc_text = " ".join([
+            payload.get("Пример вопроса", ""),
+            payload.get("Шаблонный ответ", ""),
+            payload.get("Основная категория", ""),
+            payload.get("Подкатегория", "")
+        ]).lower()
+
+        # Извлекаем ключевые слова из запроса и документа
+        query_keywords = {kw for kw in KEYWORDS_SET if kw in query_lower}
+        doc_keywords = {kw for kw in KEYWORDS_SET if kw in doc_text}
+
+        # Считаем пересечение
+        overlap = query_keywords & doc_keywords
+
+        # Рассчитываем keyword_match_score
+        if query_keywords:
+            keyword_score = len(overlap) / len(query_keywords)
+        else:
+            keyword_score = 0.0
+
+        vector_score = hit.score  # обычно в диапазоне [0, 1] для cosine
+        final_score = 0.88 * vector_score + 0.12 * keyword_score
+
+        results.append({
+            "id": hit.id,
+            "vector_score": vector_score,
+            "keyword_score": keyword_score,
+            "final_score": final_score,
+            "payload": payload
+        })
+
+    # Сортируем по final_score по убыванию
+    results.sort(key=lambda x: x["final_score"], reverse=True)
+
+    # Возвращаем только top `limit` результатов, как в оригинале
+    return [
+        {
+            "id": r["id"],
+            "score": r["final_score"],  # или оставить vector_score — но лучше final
+            "payload": r["payload"]
+        }
+        for r in results[:limit]
+    ]
 
 
 def upsert(text: str):
