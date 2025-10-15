@@ -16,12 +16,12 @@ export function HintsPanel({ hints, onHintSelect }: HintsPanelProps) {
   const displayedHints = showAll ? hints : hints.slice(0, 2);
 
   return (
-    <div className="p-4 border-b border-gray-700 bg-gray-800 overflow-auto max-h-72">
+    <div className="p-4 border-t border-gray-700 bg-gray-800 overflow-auto max-h-72">
       <div className="space-y-2">
         <h3 className="text-sm font-medium text-white mb-2">AI Suggestions</h3>
         {/* Добавил className Для первой подсказки */}
         {displayedHints.map((hint) => (
-          <HintCard key={hint.id} hint={hint} onSelect={onHintSelect} className={hint.isBestVariant ? 'border-red-200' : ''} />
+          <HintCard key={hint.id} hint={hint} onSelect={onHintSelect} className={hint.isBestVariant ? 'border-green-200' : ''} />
         ))}
 
         {hints.length > 2 && (

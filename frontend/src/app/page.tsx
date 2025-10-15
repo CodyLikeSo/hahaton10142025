@@ -193,15 +193,18 @@ export default function Home() {
             <div className="flex-shrink-0">
               {/* тута логику добавил. если данные грузим то показываем круТелку */}
               {isLoading ? <Loading /> : showHints && <HintsPanel hints={hints} onHintSelect={handleHintSelect} />}
-              <ChatInputOperator
-                onSendMessage={handleOperatorMessage}
-                placeholder="Type your message..."
-                initialValue={operatorInput}
-                onValueChange={setOperatorInput}
-                isSparkleOpen={showHints}
-                onToggleSparkle={toggleHints}
-                inputRef={operatorInputRef}
-              />
+              <div className="border-t border-gray-700 bg-gray-800">
+                <ChatInputOperator
+                  onSendMessage={handleOperatorMessage}
+                  placeholder="Type your message..."
+                  initialValue={operatorInput}
+                  onValueChange={setOperatorInput}
+                  isSparkleOpen={showHints}
+                  onToggleSparkle={toggleHints}
+                  inputRef={operatorInputRef}
+                />
+              </div>
+              
             </div>
           </div>
         </ResizablePanels>

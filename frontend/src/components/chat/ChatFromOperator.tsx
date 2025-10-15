@@ -84,7 +84,7 @@ export function ChatInputOperator({
   }, [message]);
 
   return (
-    <div className="flex gap-2 p-4 border-t border-gray-700 bg-gray-800 items-end">
+    <div className="flex gap-2 p-4 items-end">
       {/* Sparkle toggle button + tooltip */}
       <div className="relative flex-shrink-0">
         <Button
