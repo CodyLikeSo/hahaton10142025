@@ -1,0 +1,41 @@
+services:
+
+  hahaton_db:
+    image: postgres:17
+    container_name: hahaton_db
+    environment:
+      - POSTGRES_DB=${HAHATON_DB_DBNAME}
+      - POSTGRES_USER=${HAHATON_DB_USER}
+      - POSTGRES_PASSWORD=${HAHATON_DB_PASSWORD}
+    ports:
+      - "$HAHATON_DB_PORT:5432"
+    shm_size: 1gb
+    volumes:
+      - ./data/pg:/var/lib/postgresql/data
+      - ./sql/init-database.sql:/docker-entrypoint-initdb.d/init-database.sql
+    networks:
+      - hahaton-network
+
+  hahaton_qdrant:
+    image: qdrant/qdrant:latest
+    container_name: hahaton_qdrant
+    ports:
+      - "$HAHATON_QDRANT_PORT_HTTP:6333"
+      - "$HAHATON_QDRANT_PORT_GRPC:6334"
+    volumes:
+      - ./data/qdrant:/qdrant/storage
+    configs:
+      - source: hahaton_qdrant_config
+        target: /qdrant/config/production.yaml
+    networks:
+      - hahaton-network
+
+
+networks:
+  hahaton-network:
+    driver: bridge
+
+configs:
+  hahaton_qdrant_config:
+    content: |
+      # api_key: ${HAHATON_QDRANT_API_KEY}

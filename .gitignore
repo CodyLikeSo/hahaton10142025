@@ -3,3 +3,5 @@ backend/help.md
 backend/data.xlsx
 backend/.venv
 backend/__pycache__
+data
+.env
