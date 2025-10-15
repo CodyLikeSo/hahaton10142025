@@ -1,10 +1,7 @@
-from fastapi import APIRouter
 import pandas as pd
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from io import BytesIO
-from typing import List
-
+from pathlib import Path
 from database import async_get_db
 from categories.models import Category
 
@@ -16,13 +13,6 @@ def hello_world():
     return {"message": "Hello, World!"}
 
 
-import pandas as pd
-from fastapi import APIRouter, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from pathlib import Path
-
-from database import async_get_db
-from categories.models import Category
 
 router = APIRouter()
 

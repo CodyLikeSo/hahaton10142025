@@ -46,6 +46,16 @@ services:
     networks:
       - hahaton-network
 
+  hahaton_front:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hahaton_front
+    ports:
+      - "$HAHATON_FRONT_API_PORT:3000"
+    networks:
+      - hahaton-network
+
 networks:
   hahaton-network:
     driver: bridge

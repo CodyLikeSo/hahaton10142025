@@ -1,9 +1,6 @@
 from fastapi import APIRouter
-import pandas as pd
-from fastapi import APIRouter, File, HTTPException, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, HTTPException
 
-from database import async_get_db
 from api.schemas import RequestModel
 from api.utils import ask_qwen, send_telegram_log, validate_string
 from config import SECRET_KEY
@@ -22,16 +19,15 @@ def hello_world():
 import time
 from fastapi import HTTPException
 
+
 @router.post("/request/")
 def request_endpoint(request: RequestModel):
-    start_total = time.time()  # Начало всего запроса
+    start_total = time.time()
 
     try:
-        send_telegram_log(f'Начало запроса {request.text}...')
-        # 1. Валидация
+        send_telegram_log(f"Начало запроса {request.text}...")
         validated_text = validate_string(request.text)
 
-        # 2. Поиск в Qdrant — замер времени
         start_qdrant = time.time()
         options = search_in_qdrant(query=validated_text, limit=5)
         end_qdrant = time.time()
@@ -39,18 +35,12 @@ def request_endpoint(request: RequestModel):
 
         if not options:
             raise HTTPException(status_code=404, detail="No relevant answers found")
-        
-        send_telegram_log('Нашли options. Ждем ответа от qwen...')
 
-        # 3. Попытка запроса к LLM
+        send_telegram_log("Нашли options. Ждем ответа от qwen...")
+
         model_answer = None
         qwen_answer_time = None
         try:
-            candidates_text = "\n".join(
-                f"- id: {opt['id']}, вопрос: \"{opt['payload']['Пример вопроса']}\""
-                for opt in options
-            )
-
             prompt = (
                 "Ты — эксперт банка. Твоя задача — выбрать ОДИН самый релевантный вопрос из списка, "
                 "который точно соответствует теме и сущности вопроса пользователя. "
@@ -77,6 +67,7 @@ def request_endpoint(request: RequestModel):
             qwen_answer_time = end_qwen - start_qwen
 
             import re
+
             match = re.search(r"\d+", llm_response)
             if match:
                 selected_id = int(match.group())
@@ -84,11 +75,13 @@ def request_endpoint(request: RequestModel):
                     model_answer = selected_id
 
         except (RateLimitError, RuntimeError, Exception):
-            send_telegram_log('qwen так и не ответил. А жаль')
+            send_telegram_log("qwen так и не ответил. А жаль")
 
         end_total = time.time()
 
-        send_telegram_log(f"finish - {end_total}\nduration_total - {end_total - start_total}\n qwen_answer_time - {qwen_answer_time}\n vector_db_time - {vector_db_time}")
+        send_telegram_log(
+            f"finish - {end_total}\nduration_total - {end_total - start_total}\n qwen_answer_time - {qwen_answer_time}\n vector_db_time - {vector_db_time}"
+        )
 
         return {
             "options": options,
@@ -109,6 +102,6 @@ def request_endpoint(request: RequestModel):
             "finish": end_total,
             "duration_total": end_total - start_total,
             "qwen_answer_time": None,
-            "vector_db_time": vector_db_time if 'vector_db_time' in locals() else None,
+            "vector_db_time": vector_db_time if "vector_db_time" in locals() else None,
             "error": str(e),
         }

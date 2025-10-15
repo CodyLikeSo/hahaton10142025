@@ -2,8 +2,6 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
 import openai
 import json
-from collections import Counter
-import re
 
 from config import KEYWORDS_SET, format_input
 
@@ -54,72 +52,61 @@ def search(text: str, take: int) -> list[dict]:
 
 
 def search_in_qdrant(query: str, limit: int = 5) -> list[dict]:
-    """
-    Выполняет гибридный поиск: векторный + ключевые слова.
-    Возвращает результаты, отсортированные по final_score = 0.7*vector + 0.3*keyword.
-    """
-
-
-    # Нормализуем запрос
     query_lower = format_input(query)
 
-    # Получаем вектор и делаем векторный поиск
     vector = get_embedding(query)
     try:
         hits = qdrant.search(
-            collection_name=COLLECTION_NAME, query_vector=vector, limit=limit * 2  # берём чуть больше для реранкинга
+            collection_name=COLLECTION_NAME,
+            query_vector=vector,
+            limit=limit * 2,
         )
     except Exception as e:
         return [{"error": str(e)}]
 
-    # Подготовим результаты с гибридным скором
     results = []
     for hit in hits:
         payload = hit.payload
 
-        # Собираем текст из payload для анализа ключевых слов
-        # Можно включить и вопрос, и ответ — зависит от твоей задачи
-        doc_text = " ".join([
-            payload.get("Пример вопроса", ""),
-            payload.get("Шаблонный ответ", ""),
-            payload.get("Основная категория", ""),
-            payload.get("Подкатегория", "")
-        ]).lower()
-
-        # Извлекаем ключевые слова из запроса и документа
+        doc_text = " ".join(
+            [
+                payload.get("Пример вопроса", ""),
+                payload.get("Шаблонный ответ", ""),
+                payload.get("Основная категория", ""),
+                payload.get("Подкатегория", ""),
+            ]
+        ).lower()
 
         query_keywords = {kw for kw in KEYWORDS_SET if kw in query_lower}
         doc_keywords = {kw for kw in KEYWORDS_SET if kw in doc_text}
 
-        # Считаем пересечение
         overlap = query_keywords & doc_keywords
 
-        # Рассчитываем keyword_match_score
         if query_keywords:
             keyword_score = len(overlap) / len(query_keywords)
         else:
             keyword_score = 0.0
 
-        vector_score = hit.score  # обычно в диапазоне [0, 1] для cosine
+        vector_score = hit.score
         final_score = 0.88 * vector_score + 0.12 * keyword_score
 
-        results.append({
-            "id": hit.id,
-            "vector_score": vector_score,
-            "keyword_score": keyword_score,
-            "final_score": final_score,
-            "payload": payload
-        })
+        results.append(
+            {
+                "id": hit.id,
+                "vector_score": vector_score,
+                "keyword_score": keyword_score,
+                "final_score": final_score,
+                "payload": payload,
+            }
+        )
 
-    # Сортируем по final_score по убыванию
     results.sort(key=lambda x: x["final_score"], reverse=True)
 
-    # Возвращаем только top `limit` результатов, как в оригинале
     return [
         {
             "id": r["id"],
-            "score": r["final_score"],  # или оставить vector_score — но лучше final
-            "payload": r["payload"]
+            "score": r["final_score"],
+            "payload": r["payload"],
         }
         for r in results[:limit]
     ]
@@ -148,17 +135,14 @@ def insert_batch_from_csv():
             if not question:
                 continue
             questions.append(question)
-            # Сохраняем ВЕСЬ ряд как payload
             payloads.append(row)
 
     if not questions:
         print("no items to insert")
         return
 
-    # Получаем эмбеддинги
     embeddings = [e for _, e in get_embedding_batch(questions)]
 
-    # Формируем точки с полным payload
     points = [
         PointStruct(id=_hash(q), vector=emb, payload=payload)
         for q, emb, payload in zip(questions, embeddings, payloads)
@@ -176,7 +160,6 @@ def create_collection():
     )
 
 
-# === Запуск ===
 def init_qdrant():
     print("🔄 Инициализация Qdrant...")
 
@@ -206,56 +189,3 @@ def init_qdrant():
     ]
     qdrant.upsert(collection_name=COLLECTION_NAME, points=points)
     print(f"✅ Загружено {len(points)} записей в Qdrant")
-
-
-# print("inserted")
-# print(search("rm -rf /*", 3))
-# print(search("drop db", 10))
-
-# qdrant = QdrantClient(url="http://localhost:5433", api_key="drop-database")
-# qdrant.create_collection(
-#     collection_name="somebody_once_told_me"
-# )
-
-# SUPPORTED_EMBEDDING_MODELS = {'bge-m3'}
-# qdrant.set_model("bge-m3", providers=embed)
-# result = embed.embeddings.create([
-#     "how to drop database",
-#     "help me connecting to bank",
-#     "i downloaded ios app and it not working. hellp me please i am loosing money!",
-#     "the world is gonna roll me",
-#     "POSTGRES POSTGRES POSTGRES POSTGRES",
-#     "hmm"
-# ], model="bge-m3");
-# points = [
-#     PointStruct(
-#         id=7,
-#         vector=data.embedding,
-#         payload={"text": text},
-#     )
-#     for idx, (data, text) in enumerate(zip(result.data, texts))
-# ]
-# qdrant.upsert("somebody_once_told_me", )
-# qdrant.add(
-#     "somebody_once_told_me",
-#     [
-#         "how to drop database",
-#         "help me connecting to bank",
-#         "i downloaded ios app and it not working. hellp me please i am loosing money!",
-#         "the world is gonna roll me",
-#         "POSTGRES POSTGRES POSTGRES POSTGRES",
-#         "hmm"
-#     ]
-# )
-
-# x = qdrant.search("somebody_once_told_me", embed.embeddings.create("rm -rf /*").data[0].embedding)
-# print(x)
-
-# # curl -X POST \
-# #      -H "Authorization: Bearer <YOUR_TOKEN>" \
-# #      -H "Content-Type: application/json" \
-# #      https://llm.t1v.scibox.tech/v1/embeddings \
-# #      -d '{
-# #            "model": "bge-m3",
-# #            "input": "Напиши короткое стихотворение про осень"
-# #          }'
