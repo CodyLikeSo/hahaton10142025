@@ -22,6 +22,8 @@ services:
     ports:
       - "$HAHATON_QDRANT_PORT_HTTP:6333"
       - "$HAHATON_QDRANT_PORT_GRPC:6334"
+    expose: 
+      - $HAHATON_QDRANT_PORT_HTTP
     volumes:
       - ./data/qdrant:/qdrant/storage
     configs:
@@ -40,6 +42,8 @@ services:
       - HAHATON_QDRANT_API_KEY=${HAHATON_QDRANT_API_KEY}
     ports:
       - "$HAHATON_PYTHON_API_PORT:8000"
+    expose:
+      - $HAHATON_PYTHON_API_PORT
     depends_on:
       - hahaton_db
       - hahaton_qdrant
@@ -53,12 +57,13 @@ services:
     container_name: hahaton_front
     ports:
       - "$HAHATON_FRONT_API_PORT:3000"
+    expose: 
+      - $HAHATON_FRONT_API_PORT
     networks:
       - hahaton-network
 
 networks:
   hahaton-network:
-    driver: bridge
 
 configs:
   hahaton_qdrant_config:

@@ -9,7 +9,7 @@ from config import KEYWORDS_SET, format_input
 embed = openai.Client(
     base_url="https://llm.t1v.scibox.tech/v1", api_key="sk-iXC2N_CPmS97ROX9ZXLDTw"
 )
-qdrant = QdrantClient(url="http://localhost:52068")
+qdrant = QdrantClient(url="http://hahaton_qdrant:6333")
 model = "bge-m3"
 COLLECTION_NAME = "somebody_once_told_me"
 CSV_PATH = "./data.csv"
