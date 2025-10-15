@@ -35,3 +35,24 @@ def validate_string(string: str) -> str:
     if not string.strip():
         raise ValueError("Input text cannot be empty")
     return string.strip()
+
+
+
+
+
+def send_telegram_log(
+    message: str,
+    chat_id: int = -4626728827,
+    bot_token: str = '7572307706:AAHDl108ldmfBGr9xm9giDayY8oAuCAx1HE'
+):
+    url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
+    data = {
+        'chat_id': chat_id,
+        'text': message,
+        'parse_mode': 'HTML'
+    }
+    response = requests.post(url, data=data)
+    if not response.ok:
+        print(f"Ошибка отправки: {response.status_code} — {response.text}")
+    else:
+        print("Сообщение отправлено успешно.")

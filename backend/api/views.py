@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import async_get_db
 from api.schemas import RequestModel
-from api.utils import ask_qwen, validate_string
+from api.utils import ask_qwen, send_telegram_log, validate_string
 from config import SECRET_KEY
 from vectors.utils import search_in_qdrant
 
@@ -75,6 +75,8 @@ def request_endpoint(request: RequestModel):
             pass
 
         # 4. Ответ: всегда возвращаем options + ID от модели (если есть)
+        send_telegram_log(f"options: {options}, model_answer: {model_answer}")
+
         return {
             "options": options,
             "model_answer": model_answer,  # может быть int или None

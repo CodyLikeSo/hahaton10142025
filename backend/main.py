@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-
+from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 from categories.views import router as basic_router
 from api.views import router as main_router
@@ -19,6 +19,19 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+
+# Настройка CORS — разрешаем всё
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Разрешить все источники
+    allow_credentials=True,
+    allow_methods=["*"],  # Разрешить все методы (GET, POST, PUT, DELETE и т.д.)
+    allow_headers=["*"],  # Разрешить все заголовки
+)
+
+
+
 
 app.include_router(basic_router)
 app.include_router(main_router)
