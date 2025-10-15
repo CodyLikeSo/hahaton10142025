@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Send, Sparkle } from "lucide-react";
+import { useState, useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Send, Sparkle } from 'lucide-react';
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -19,15 +19,15 @@ interface ChatInputProps {
   inputRef?: React.RefObject<HTMLTextAreaElement | null>;
 }
 
-export function ChatInputOperator({ 
-  onSendMessage, 
-  placeholder = "Type your message...", 
+export function ChatInputOperator({
+  onSendMessage,
+  placeholder = 'Type your message...',
   disabled = false,
-  initialValue = "",
+  initialValue = '',
   onValueChange,
   isSparkleOpen: isSparkleOpenProp,
-  onToggleSparkle
-  , inputRef
+  onToggleSparkle,
+  inputRef,
 }: ChatInputProps) {
   const [message, setMessage] = useState(initialValue);
   const [isSparkleOpenLocal, setIsSparkleOpenLocal] = useState(false);
@@ -41,15 +41,15 @@ export function ChatInputOperator({
   const handleSend = () => {
     if (message.trim() && !disabled) {
       onSendMessage(message.trim());
-      setMessage("");
+      setMessage('');
       if (onValueChange) {
-        onValueChange("");
+        onValueChange('');
       }
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -58,7 +58,7 @@ export function ChatInputOperator({
   const toggleSparkle = (e: React.MouseEvent) => {
     e.preventDefault();
     // If parent provided a controlled toggle, use that. Otherwise toggle local state.
-    if (typeof onToggleSparkle === "function") {
+    if (typeof onToggleSparkle === 'function') {
       onToggleSparkle();
     } else {
       setIsSparkleOpenLocal((s) => !s);
@@ -76,7 +76,7 @@ export function ChatInputOperator({
   // Auto-resize textarea with 4 line limit
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = 'auto';
       const scrollHeight = textareaRef.current.scrollHeight;
       const maxHeight = 4 * 20; // 4 lines * 20px per line
       textareaRef.current.style.height = `${Math.min(scrollHeight, maxHeight)}px`;
@@ -90,14 +90,10 @@ export function ChatInputOperator({
         <Button
           onClick={toggleSparkle}
           type="button"
-          aria-pressed={
-            typeof isSparkleOpenProp === "boolean" ? isSparkleOpenProp : isSparkleOpenLocal
-          }
-          aria-expanded={
-            typeof isSparkleOpenProp === "boolean" ? isSparkleOpenProp : isSparkleOpenLocal
-          }
+          aria-pressed={typeof isSparkleOpenProp === 'boolean' ? isSparkleOpenProp : isSparkleOpenLocal}
+          aria-expanded={typeof isSparkleOpenProp === 'boolean' ? isSparkleOpenProp : isSparkleOpenLocal}
           className={`w-[40px] h-[40px] p-0 rounded-lg transition-colors ${
-            (typeof isSparkleOpenProp === "boolean" ? isSparkleOpenProp : isSparkleOpenLocal)
+            (typeof isSparkleOpenProp === 'boolean' ? isSparkleOpenProp : isSparkleOpenLocal)
               ? 'bg-white text-black'
               : 'bg-gray-700 text-white hover:bg-gray-600'
           }`}
@@ -106,7 +102,7 @@ export function ChatInputOperator({
         </Button>
 
         {/* Only show the local tooltip when this component is uncontrolled for sparkle */}
-        {typeof isSparkleOpenProp === "undefined" && isSparkleOpenLocal && (
+        {typeof isSparkleOpenProp === 'undefined' && isSparkleOpenLocal && (
           <div className="absolute right-0 bottom-full mb-2 w-64 bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-lg z-10">
             <div className="text-sm text-gray-200">Sparkle options or suggestions go here.</div>
             {/* Add interactive content here as needed */}

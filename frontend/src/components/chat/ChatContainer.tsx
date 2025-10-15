@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useLayoutEffect } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Message } from "@/lib/mockData";
-import { ChatMessage } from "./ChatMessage";
+import { useRef, useLayoutEffect } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ChatMessage } from './ChatMessage';
+import { Message } from '@/interface';
 
 interface ChatContainerProps {
   messages: Message[];
@@ -22,7 +22,7 @@ export function ChatContainer({ messages, category, title, isClientView = false 
       // Preferred: scroll the last message into view (works well with dynamic heights)
       if (lastMessageRef.current) {
         try {
-          lastMessageRef.current.scrollIntoView({ behavior: "auto", block: "end" });
+          lastMessageRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
           return;
         } catch (e) {
           // fall through to manual scroll if scrollIntoView fails
