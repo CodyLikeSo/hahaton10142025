@@ -5,3 +5,5 @@ backend/.venv
 backend/__pycache__
 data
 .env
+.vscode
+__pycache__

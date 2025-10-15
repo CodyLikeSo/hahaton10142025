@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class Category(BaseModel):
     id: int
     main_category: str
