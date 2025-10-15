@@ -5,7 +5,7 @@ import json
 from collections import Counter
 import re
 
-from config import KEYWORDS_SET
+from config import KEYWORDS_SET, format_input
 
 
 embed = openai.Client(
@@ -61,7 +61,7 @@ def search_in_qdrant(query: str, limit: int = 5) -> list[dict]:
 
 
     # Нормализуем запрос
-    query_lower = query.lower()
+    query_lower = format_input(query)
 
     # Получаем вектор и делаем векторный поиск
     vector = get_embedding(query)
@@ -87,6 +87,7 @@ def search_in_qdrant(query: str, limit: int = 5) -> list[dict]:
         ]).lower()
 
         # Извлекаем ключевые слова из запроса и документа
+
         query_keywords = {kw for kw in KEYWORDS_SET if kw in query_lower}
         doc_keywords = {kw for kw in KEYWORDS_SET if kw in doc_text}
 

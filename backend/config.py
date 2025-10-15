@@ -1,6 +1,8 @@
+import itertools
+
 SECRET_KEY = "sk-iXC2N_CPmS97ROX9ZXLDTw"
 
-KEYWORDS_SET = [
+KEYWORDS_SET = {
     # 1. Продукты и услуги (Карты, Кредиты, Вклады)
     "more",
     "форсаж",
@@ -73,22 +75,44 @@ KEYWORDS_SET = [
     "онлайн",
     "виртуальная карточка",
     "мгновенного выпуска",
-]
-
-ALIASES = [
-    {'more': ['море', 'mor']},
-    {'форсаж': ['forsage', 'forsag']},
-    {'республика беларусь': ['рб', 'республики беларусь', 'беларусь', 'белоруссия', 'белорусь', 'belarus', 'belorussia', 'belorussia']},
-    {'пароль': ['password', 'pass', 'креды']},
-    {'комплимент': ['compliment']},
-    {'signature': ['сигнатура', 'signa',]},
-    {'infinite': ['инфинити', 'infinity', 'infin', 'инфинит', 'инфин']},
-    {'plat/on': ['платон', 'platon']},
-    {'портмоне': ['portmone', 'portmon', 'портмоне', 'портмоне 2.0', 'партмане', 'портмане', 'партмоне', 'portmon']},
-    {'отличник': ['otlichnik', 'отличника', 'отличнику', 'отличником', 'отличником', 'отличнике']},
-    {'черепаха': ['cherepaha', 'чирипаха', 'черипаха', 'чирепаха', 'черепах', 'черепахе', 'черепахой', 'черепаху', 'черепахи']},
-    {'на всё про всё': ['на все про все', 'на все провсе', 'на всё про все', 'на все про всё', 'навсепровсе']},
-    {'дальше - меньше': ['дальше меньше', 'дальше - меньше', 'дальше-меньше', 'дальшеменьше']},
+}
 
 
-]
+
+def transpose_aliases(aliases: dict[str, list[str]]) -> dict[str,str]:
+    vals = {}
+
+    for k,v in aliases.items():
+        for v in v:
+            vals[v.strip().lower()] = k
+
+    return vals
+
+ALIASES = transpose_aliases({
+    'more': ['море', 'mor'],
+    'форсаж': ['forsage', 'forsag'],
+    'республика беларусь': ['рб', 'республики беларусь', 'беларусь', 'белоруссия', 'белорусь', 'belarus', 'belorussia', 'belorussia'],
+    'пароль': ['password', 'pass', 'креды'],
+    'комплимент': ['compliment'],
+    'signature': ['сигнатура', 'signa',],
+    'infinite': ['инфинити', 'infinity', 'infin', 'инфинит', 'инфин'],
+    'plat/on': ['платон', 'platon'],
+    'портмоне': ['portmone', 'portmon', 'портмоне', 'портмоне 2.0', 'партмане', 'портмане', 'партмоне', 'portmon'],
+    'отличник': ['otlichnik', 'отличника', 'отличнику', 'отличником', 'отличником', 'отличнике'],
+    'черепаха': ['cherepaha', 'чирипаха', 'черипаха', 'чирепаха', 'черепах', 'черепахе', 'черепахой', 'черепаху', 'черепахи'],
+    'на всё про всё': ['на все про все', 'на все провсе', 'на всё про все', 'на все про всё', 'навсепровсе'],
+    'дальше - меньше': ['дальше меньше', 'дальше - меньше', 'дальше-меньше', 'дальшеменьше'],
+})
+
+def slice_windows(arr, n):
+    if not arr or n <= 0 or n > len(arr):
+        return []  # Handle edge cases for empty list, invalid window size
+
+    windows = []
+    for i in range(len(arr) - n + 1):
+        windows.append(arr[i : i + n])
+    return windows
+
+def format_input(v: str) -> str:
+    words = v.lower().strip().split(' ')
+    return [ALIASES.get(x) or x for x in words]
