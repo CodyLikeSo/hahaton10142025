@@ -30,6 +30,21 @@ services:
     networks:
       - hahaton-network
 
+  hahaton_python:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hahaton_python
+    environment:
+      - HAHATON_PYTHON_SKIBOX_API_KEY=${HAHATON_PYTHON_SKIBOX_API_KEY}
+      - HAHATON_QDRANT_API_KEY=${HAHATON_QDRANT_API_KEY}
+    ports:
+      - "$HAHATON_PYTHON_API_PORT:8000"
+    depends_on:
+      - hahaton_db
+      - hahaton_qdrant
+    networks:
+      - hahaton-network
 
 networks:
   hahaton-network:
