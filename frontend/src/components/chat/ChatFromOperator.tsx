@@ -87,19 +87,6 @@ export function ChatInputOperator({
     <div className="flex gap-2 p-4 items-end">
       {/* Sparkle toggle button + tooltip */}
       <div className="relative flex-shrink-0">
-        <Button
-          onClick={toggleSparkle}
-          type="button"
-          aria-pressed={typeof isSparkleOpenProp === 'boolean' ? isSparkleOpenProp : isSparkleOpenLocal}
-          aria-expanded={typeof isSparkleOpenProp === 'boolean' ? isSparkleOpenProp : isSparkleOpenLocal}
-          className={`w-[40px] h-[40px] p-0 rounded-lg transition-colors ${
-            (typeof isSparkleOpenProp === 'boolean' ? isSparkleOpenProp : isSparkleOpenLocal)
-              ? 'bg-white text-black'
-              : 'bg-gray-700 text-white hover:bg-gray-600'
-          }`}
-        >
-          <Sparkle className="h-4 w-4" />
-        </Button>
 
         {/* Only show the local tooltip when this component is uncontrolled for sparkle */}
         {typeof isSparkleOpenProp === 'undefined' && isSparkleOpenLocal && (

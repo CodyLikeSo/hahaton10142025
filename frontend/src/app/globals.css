@@ -120,3 +120,25 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+html {
+  overflow: hidden; /* полностью отключает прокрутку */
+}
+
+/* ИЛИ, если хотите оставить прокрутку, но скрыть сам скроллбар (только визуально): */
+
+/* Для WebKit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Для Firefox */
+html {
+  scrollbar-width: none; /* 'none' скрывает скроллбар */
+}
+
+/* Убираем отступ под скроллбар (опционально) */
+body {
+  -ms-overflow-style: none; /* IE и старые Edge */
+}

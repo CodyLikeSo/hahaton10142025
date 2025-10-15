@@ -145,8 +145,13 @@ export default function Home() {
       <div className="h-full w-full p-6">
         <ResizablePanels initialSizes={[30, 70]} minSize={20}>
           {/* Left Panel - Query Panel */}
-          <div className="flex flex-col h-full gap-5">
-            <div className="flex flex-col bg-gray-900 rounded-xl border border-gray-700 overflow-hidden flex-1 min-h-[200px]">
+          <ResizablePanels
+            initialSizes={[60, 40]} // Например, 60% вопрос / 40% терминал
+            minSize={15}
+            direction="vertical"
+          >
+            {/* Верхняя левая: Ask a question */}
+            <div className="flex flex-col bg-gray-900 rounded-xl border border-gray-700 overflow-hidden h-full">
               <div className="flex justify-center p-4 border-b border-gray-700 bg-gray-800 flex-shrink-0">
                 <div className="flex flex-col items-center">
                   <h2 className="text-lg font-semibold text-white">Ask a question</h2>
@@ -166,8 +171,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* тута верстку добавил для терминала */}
-            <div className="flex flex-col bg-gray-900 rounded-xl border border-gray-700 overflow-hidden flex-1/2">
+            {/* Нижняя левая: Terminal */}
+            <div className="flex flex-col bg-gray-900 rounded-xl border border-gray-700 overflow-hidden h-full">
               <div className="flex items-center justify-center p-4 border-b border-gray-700 bg-gray-800 flex-shrink-0">
                 <div className="flex flex-col items-center">
                   <h2 className="text-lg font-semibold text-white">Terminal</h2>
@@ -175,11 +180,10 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex-1 flex flex-col overflow-auto p-4 gap-8">
-                {/* добавил компоненту для отрисовки терминала */}
                 <ChatTerminal responseData={responseData} />
               </div>
             </div>
-          </div>
+          </ResizablePanels>
 
           {/* Operator Chat */}
           <div className="flex flex-col bg-gray-900 rounded-xl border border-gray-700 overflow-hidden h-full">
