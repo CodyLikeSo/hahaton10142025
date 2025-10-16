@@ -31,7 +31,6 @@ app.add_middleware(
 )
 
 
-app.include_router(basic_router)
 app.include_router(main_router)
 
 
