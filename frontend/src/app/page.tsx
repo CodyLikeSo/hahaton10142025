@@ -116,13 +116,13 @@ export default function Home() {
       <div className="h-full w-full p-6">
         <ResizablePanels initialSizes={[30, 70]} minSize={20}>
           {/* Left Panel - Query + Terminal */}
-          <ResizablePanels initialSizes={[60, 40]} minSize={15} direction="vertical">
+          <ResizablePanels initialSizes={[15, 85]} minSize={15} direction="vertical">
             {/* Ask a question */}
             <div className="flex flex-col bg-white rounded-xl border border-gray-200 overflow-hidden h-full">
               <div className="flex justify-center p-4 border-b border-gray-200 bg-gray-100 flex-shrink-0">
                 <div className="flex flex-col items-center">
-                  <h2 className="text-lg font-semibold text-black">Ask a question</h2>
-                  <div className="text-xs text-gray-400 mt-1">Send to operator</div>
+                  <h2 className="text-lg font-semibold text-black">Ask a Question</h2>
+                  <div className="text-xs text-gray-400 mt-1">Send a message to Operator</div>
                 </div>
               </div>
               <div className="flex-1 flex items-center justify-center p-4">
@@ -133,6 +133,7 @@ export default function Home() {
                     placeholder="Type your question..."
                     initialValue={queryInput}
                     onValueChange={setQueryInput}
+                    hideLeftIcon={true}
                   />
                 </div>
               </div>
@@ -143,7 +144,7 @@ export default function Home() {
               <div className="flex items-center justify-center p-4 border-b border-gray-200 bg-gray-100 flex-shrink-0">
                 <div className="flex flex-col items-center">
                   <h2 className="text-lg font-semibold text-black">Terminal</h2>
-                  <div className="text-xs text-gray-400 mt-1">Show data JSON</div>
+                  <div className="text-xs text-gray-400 mt-1">Logs</div>
                 </div>
               </div>
               <div className="flex-1 flex flex-col overflow-auto p-4 gap-8">
@@ -157,7 +158,7 @@ export default function Home() {
             <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-100 flex-shrink-0">
               <div>
                 <h2 className="text-lg font-semibold text-black">Operator Chat</h2>
-                <div className="text-xs text-gray-400 mt-1">Live session</div>
+                <div className="text-xs text-gray-400 mt-1">Live Session</div>
               </div>
             </div>
             <ChatContainer messages={operatorMessages} category="General" title="" isClientView={false} />

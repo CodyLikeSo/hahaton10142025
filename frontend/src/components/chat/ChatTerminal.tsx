@@ -10,7 +10,7 @@ export const ChatTerminal: FC<Props> = ({ responseData }) => {
   return (
     <>
       {responseData.map((item) => (
-        <pre key={item.id} className="text-[9px] text-gray-300 whitespace-pre-wrap font-mono">
+        <pre key={item.id} className="text-[12px] text-black! whitespace-pre-wrap font-mono">
           <code>{`[${item.time}]: ${JSON.stringify(item.content, null, 2)}`}</code>
         </pre>
       ))}

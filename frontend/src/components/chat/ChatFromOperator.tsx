@@ -11,6 +11,8 @@ interface ChatInputProps {
   disabled?: boolean;
   initialValue?: string;
   onValueChange?: (value: string) => void;
+  // When true, hide the left-side sparkle/icon (useful for specific instances)
+  hideLeftIcon?: boolean;
   // Controlled sparkle (optional). If provided, ChatInput will use these props
   // to toggle the global HintsPanel instead of showing its own tooltip.
   isSparkleOpen?: boolean;
@@ -28,6 +30,7 @@ export function ChatInputOperator({
   isSparkleOpen: isSparkleOpenProp,
   onToggleSparkle,
   inputRef,
+  hideLeftIcon = false,
 }: ChatInputProps) {
   const [message, setMessage] = useState(initialValue);
   const [isSparkleOpenLocal, setIsSparkleOpenLocal] = useState(false);
@@ -85,30 +88,32 @@ export function ChatInputOperator({
 
   return (
     <div className="flex gap-2 p-4 items-end">
-      {/* Sparkle toggle button + tooltip */}
-      <div className="relative flex-shrink-0">
-        <Button
-          onClick={toggleSparkle}
-          type="button"
-          aria-pressed={typeof isSparkleOpenProp === 'boolean' ? isSparkleOpenProp : isSparkleOpenLocal}
-          aria-expanded={typeof isSparkleOpenProp === 'boolean' ? isSparkleOpenProp : isSparkleOpenLocal}
-          className={`w-[40px] h-[40px] p-0 rounded-lg transition-colors ${
-            (typeof isSparkleOpenProp === 'boolean' ? isSparkleOpenProp : isSparkleOpenLocal)
-              ? 'bg-black text-white hover:bg-black/80 hover:text-white'
-              : 'bg-white border border-gray-200 text-black hover:bg-gray-100'
-          }`}
-        >
-          <Sparkle className="h-4 w-4" />
-        </Button>
+      {/* Sparkle toggle button + tooltip (hidden when hideLeftIcon is true) */}
+      {!hideLeftIcon && (
+        <div className="relative flex-shrink-0">
+          <Button
+            onClick={toggleSparkle}
+            type="button"
+            aria-pressed={typeof isSparkleOpenProp === 'boolean' ? isSparkleOpenProp : isSparkleOpenLocal}
+            aria-expanded={typeof isSparkleOpenProp === 'boolean' ? isSparkleOpenProp : isSparkleOpenLocal}
+            className={`w-[40px] h-[40px] p-0 rounded-lg transition-colors ${
+              (typeof isSparkleOpenProp === 'boolean' ? isSparkleOpenProp : isSparkleOpenLocal)
+                ? 'bg-black text-white hover:bg-black/80 hover:text-white'
+                : 'bg-white border border-gray-200 text-black hover:bg-gray-100'
+            }`}
+          >
+            <Sparkle className="h-4 w-4" />
+          </Button>
 
-        {/* Only show the local tooltip when this component is uncontrolled for sparkle */}
-        {typeof isSparkleOpenProp === 'undefined' && isSparkleOpenLocal && (
-          <div className="absolute right-0 bottom-full mb-2 w-64 bg-gray-100 border border-gray-200 rounded-lg p-3 shadow-lg z-10">
-            <div className="text-sm text-gray-200">Sparkle options or suggestions go here.</div>
-            {/* Add interactive content here as needed */}
-          </div>
-        )}
-      </div>
+          {/* Only show the local tooltip when this component is uncontrolled for sparkle */}
+          {typeof isSparkleOpenProp === 'undefined' && isSparkleOpenLocal && (
+            <div className="absolute right-0 bottom-full mb-2 w-64 bg-gray-100 border border-gray-200 rounded-lg p-3 shadow-lg z-10">
+              <div className="text-sm text-gray-200">Sparkle options or suggestions go here.</div>
+              {/* Add interactive content here as needed */}
+            </div>
+          )}
+        </div>
+      )}
 
 
       <Textarea

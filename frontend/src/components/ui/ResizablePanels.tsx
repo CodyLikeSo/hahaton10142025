@@ -98,7 +98,7 @@ export function ResizablePanels({
           isHorizontal
             ? "w-4 cursor-col-resize"
             : "h-4 cursor-row-resize"
-        } ${isResizing ? "bg-gray-700" : "hover:bg-gray-800"}`}
+        } ${isResizing ? "bg-gray-100" : "hover:bg-gray-100"}`}
         onMouseDown={handleMouseDown}
       >
         {isHorizontal ? (
