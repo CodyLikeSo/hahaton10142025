@@ -110,7 +110,6 @@ export function ChatInputOperator({
         )}
       </div>
 
-
       <Textarea
         ref={(el: HTMLTextAreaElement) => {
           // wire internal ref for resize behavior
