@@ -29,7 +29,7 @@ def request_endpoint(request: RequestModel):
         validated_text = validate_string(request.text)
 
         start_qdrant = time.time()
-        options = search_in_qdrant(query=validated_text, limit=5)
+        options = search_in_qdrant(query=validated_text, limit=10)
         end_qdrant = time.time()
         vector_db_time = end_qdrant - start_qdrant
 
