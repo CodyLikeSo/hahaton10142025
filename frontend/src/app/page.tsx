@@ -8,7 +8,6 @@ import { HintsPanel } from '@/components/hints/HintsPanel';
 import { ResizablePanels } from '@/components/ui/ResizablePanels';
 import { ChatTerminal } from '@/components/chat/ChatTerminal';
 import { ApiResponse, Hint, Message, ResponseItem } from '@/interface';
-import { mockDataResponse } from '@/lib/mockData';
 import { Loading } from '@/components/Loading';
 
 export default function Home() {
@@ -17,8 +16,6 @@ export default function Home() {
   const [queryInput, setQueryInput] = useState('');
   const [hints, setHints] = useState<Hint[]>([]);
   const [showHints, setShowHints] = useState(false);
-
-  /** Состояния responseData (сохраняем дату после запроса), isLoading(true во время загрузки, false после) */
   const [responseData, setResponseData] = useState<ResponseItem[]>([]);
   const [isLoading, setLoading] = useState(false);
 
@@ -34,74 +31,49 @@ export default function Home() {
     setOperatorMessages((prev) => [...prev, clientMessage]);
 
     try {
-      /** обнуляем подсказки и начинаем загрузку данных */
       setHints([]);
       setShowHints(false);
       setLoading(true);
 
-      /** РАССКОМЕНТИРОВАТЬ загрузку данных т.к использовал моковые данные */
+      // ✅ РЕАЛЬНЫЙ ЗАПРОС К FASTAPI (хардкод для локальной разработки)
+      const response = await fetch('http://127.0.0.1:8000/request/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: query }),
+      });
 
-      // const response = await fetch('http://127.0.0.1:8000/request/', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({ text: query }),
-      // });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+      }
 
-      /** получение моковыъ данных после выполнения запроса. можно удалить после получения реальных запросов */
-      const getMockResponse = async () => {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve(mockDataResponse);
-          }, 3000);
-        });
-      };
-
-      /** запрос за данными. можно удалить после получения реальных запросов */
-      const response = await getMockResponse();
-      const data = response as ApiResponse;
-
-      /** РАССКОМЕНТИРОВАТЬ  */
-      // if (!response.ok) {
-      //   throw new Error(`HTTP ${response.status}`);
-      // }
-      // const data = (await response.json()) as ApiResponse;
+      const data = (await response.json()) as ApiResponse;
 
       if (!Array.isArray(data.options)) {
         throw new Error('Invalid API response: options is not an array');
       }
 
       const modelAnswerId = data.model_answer;
-
-      // Находим главный ответ
       const mainOption = data.options.find((opt) => opt.id === modelAnswerId);
       const otherOptions = data.options.filter((opt) => opt.id !== modelAnswerId);
-
-      // Формируем порядок: сначала главный, потом остальные
       const orderedOptions = mainOption ? [mainOption, ...otherOptions] : data.options;
 
-      // Преобразуем в Hint[]
-      /** ДОБАВИЛ  isBestVariant чтобы пометить подсказку главной. Категории и подкатегории чтобы отобразить в иннпуте */
       const hintList: Hint[] = orderedOptions.map((opt, index) => ({
-        id: `hint-${opt.id ?? index}`, // уникальный ID
+        id: `hint-${opt.id ?? index}`,
         text: opt.payload['Шаблонный ответ'] || 'Без текста ответа',
         isBestVariant: opt.id === modelAnswerId,
-        category: opt.payload['Основная категория'],
-        subcategory: opt.payload['Подкатегория'],
+        category: opt.payload['Основная категория'] || '',
+        subcategory: opt.payload['Подкатегория'] || '',
       }));
 
-      /** Создаем newItem, кидаем его в массив responseData для отображения его в терминале (data: json) */
-      if (data) {
-        const newItem = {
-          id: Date.now(),
-          time: new Date().toLocaleTimeString(),
-          content: data,
-        };
-        setResponseData((prev) => [...prev, newItem]);
-      }
+      const newItem: ResponseItem = {
+        id: Date.now(),
+        time: new Date().toLocaleTimeString(),
+        content: data,
+      };
+      setResponseData((prev) => [...prev, newItem]);
 
-      setLoading(false); /** Данные получили загрузка завершена */
       setHints(hintList);
       setShowHints(true);
     } catch (error) {
@@ -117,7 +89,8 @@ export default function Home() {
         },
       ]);
       setShowHints(true);
-      setLoading(false); /** Данные не получили загрузка завершена */
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -133,9 +106,7 @@ export default function Home() {
 
   const handleHintSelect = (text: string) => {
     setOperatorInput(text);
-    if (operatorInputRef.current) {
-      operatorInputRef.current.focus();
-    }
+    operatorInputRef.current?.focus();
   };
 
   const toggleHints = () => setShowHints((s) => !s);
@@ -144,13 +115,9 @@ export default function Home() {
     <div className="h-screen w-screen bg-black dark overflow-auto">
       <div className="h-full w-full p-6">
         <ResizablePanels initialSizes={[30, 70]} minSize={20}>
-          {/* Left Panel - Query Panel */}
-          <ResizablePanels
-            initialSizes={[60, 40]} // Например, 60% вопрос / 40% терминал
-            minSize={15}
-            direction="vertical"
-          >
-            {/* Верхняя левая: Ask a question */}
+          {/* Left Panel - Query + Terminal */}
+          <ResizablePanels initialSizes={[60, 40]} minSize={15} direction="vertical">
+            {/* Ask a question */}
             <div className="flex flex-col bg-gray-900 rounded-xl border border-gray-700 overflow-hidden h-full">
               <div className="flex justify-center p-4 border-b border-gray-700 bg-gray-800 flex-shrink-0">
                 <div className="flex flex-col items-center">
@@ -171,7 +138,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Нижняя левая: Terminal */}
+            {/* Terminal */}
             <div className="flex flex-col bg-gray-900 rounded-xl border border-gray-700 overflow-hidden h-full">
               <div className="flex items-center justify-center p-4 border-b border-gray-700 bg-gray-800 flex-shrink-0">
                 <div className="flex flex-col items-center">
@@ -195,7 +162,6 @@ export default function Home() {
             </div>
             <ChatContainer messages={operatorMessages} category="General" title="" isClientView={false} />
             <div className="flex-shrink-0">
-              {/* тута логику добавил. если данные грузим то показываем круТелку */}
               {isLoading ? <Loading /> : showHints && <HintsPanel hints={hints} onHintSelect={handleHintSelect} />}
               <div className="border-t border-gray-700 bg-gray-800">
                 <ChatInputOperator
@@ -208,7 +174,6 @@ export default function Home() {
                   inputRef={operatorInputRef}
                 />
               </div>
-              
             </div>
           </div>
         </ResizablePanels>
