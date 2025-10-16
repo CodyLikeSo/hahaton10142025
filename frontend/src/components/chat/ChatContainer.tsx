@@ -45,7 +45,7 @@ export function ChatContainer({ messages, category, title, isClientView = false 
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {/* Messages */}
-      <ScrollArea ref={scrollAreaRef} className="flex-1 bg-gray-900">
+      <ScrollArea ref={scrollAreaRef} className="flex-1 bg-white">
         <div className="flex flex-col h-full pt-4 px-4 pb-6 gap-2">
           {messages.map((message, idx) => (
             <div key={message.id} ref={idx === messages.length - 1 ? lastMessageRef : undefined}>

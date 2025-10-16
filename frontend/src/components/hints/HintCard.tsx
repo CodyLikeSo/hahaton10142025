@@ -33,7 +33,7 @@ export function HintCard({ hint, onSelect, className }: HintCardProps) {
   /** В Card накинул className для самой крутой подсказки */
   return (
     <Card
-      className={cn('p-3 cursor-pointer  hover:bg-gray-700 transition-colors border border-gray-600 bg-gray-800 rounded-lg', className)}
+      className={cn('p-3 cursor-pointer hover:bg-gray-100 transition-colors border border-gray-200 bg-white rounded-lg', className)}
       onClick={handleClick}
     >
       <div className="relative">
@@ -41,13 +41,13 @@ export function HintCard({ hint, onSelect, className }: HintCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="absolute top-0 right-0 h-6 w-6 p-0 text-gray-400 hover:text-white hover:bg-gray-600 rounded-lg cursor-pointer"
+            className="absolute top-0 right-0 h-6 w-6 p-0 text-gray-400 hover:text-black hover:bg-transparent! rounded-lg cursor-pointer"
             onClick={handleExpandToggle}
           >
-            {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            {isExpanded ? <ChevronUp/> : <ChevronDown/>}
           </Button>
         )}
-        <p className="text-sm text-gray-200 pr-8">{displayText}</p>
+        <p className="text-sm text-black pr-8">{displayText}</p>
       </div>
     </Card>
   );
