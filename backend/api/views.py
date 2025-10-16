@@ -46,6 +46,7 @@ def request_endpoint(request: RequestModel):
                 "который точно соответствует теме и сущности вопроса пользователя. "
                 "Обращай внимание на: тип продукта (карта, вклад и т.д.), название продукта (например, 'ЧЕРЕПАХА'), и смысл запроса. "
                 "Ответ должен содержать ТОЛЬКО числовой ID — ничего больше."
+                "Если вдруг вопрос пользователя ВООБЩЕ не относится к банковской теме, то ответь в точности - 'Уточните вопрос'"
             )
             question = (
                 f'Вопрос пользователя: "{validated_text}"\n\n'
@@ -63,6 +64,31 @@ def request_endpoint(request: RequestModel):
 
             start_qwen = time.time()
             llm_response = ask_qwen(question=question, prompt=prompt, key=SECRET_KEY)
+            if llm_response.strip().lower() == "уточните вопрос":
+                return {
+                    "options": 
+                        [
+                            {
+                            "id": 0,
+                            "score": 0.99,
+                            "payload": {
+                                "Основная категория": "",
+                                "Подкатегория": "",
+                                "Пример вопроса": "",
+                                "Приоритет": "",
+                                "Целевая аудитория": "",
+                                "Шаблонный ответ": "Уточните вопрос..."
+                            }
+                            },
+                        ],
+                    "model_answer": 0,
+                    "start": 0,
+                    "finish": 0,
+                    "duration_total": 0,
+                    "qwen_answer_time": 0,
+                    "vector_db_time": 0,
+                }
+
             end_qwen = time.time()
             qwen_answer_time = end_qwen - start_qwen
 
