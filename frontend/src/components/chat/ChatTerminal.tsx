@@ -5,7 +5,6 @@ interface Props {
   responseData: ResponseItem[];
 }
 
-/** Создал компоненту для отображения данных в терминале */
 export const ChatTerminal: FC<Props> = ({ responseData }) => {
   return (
     <>

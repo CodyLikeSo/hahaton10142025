@@ -17,7 +17,6 @@ interface HintCardProps {
 export function HintCard({ hint, onSelect, className }: HintCardProps) {
   const [isExpanded, setIsExpanded] = useState(hint.isExpanded || false);
 
-  // Truncate only the hint text for preview; chips will show category/subcategory and score
   const textOnly = hint.text || '';
   const shouldShowExpandButton = textOnly.length > 150;
   const displayText = shouldShowExpandButton && !isExpanded ? textOnly.substring(0, 150) + '...' : textOnly;
@@ -31,7 +30,6 @@ export function HintCard({ hint, onSelect, className }: HintCardProps) {
     setIsExpanded(!isExpanded);
   };
 
-  // Format score to two decimal places if numeric
   const formattedScore = (() => {
     if (typeof hint.score === 'number') return hint.score.toFixed(2);
     if (typeof hint.score === 'string') {
@@ -41,20 +39,17 @@ export function HintCard({ hint, onSelect, className }: HintCardProps) {
     return '';
   })();
 
-  /** В Card накинул className для самой крутой подсказки */
   return (
     <Card
       className={cn('p-3 cursor-pointer hover:bg-gray-100 transition-colors border border-gray-200 bg-white rounded-lg', className)}
       onClick={handleClick}
     >
       <div className="flex items-center gap-3">
-        {/* Chips row on the left */}
         <div className="flex items-center gap-2 mt-1 shrink-0">
           <Badge variant="default" className="text-xs px-2 py-0.5">{hint.category}{hint.subcategory ? ` > ${hint.subcategory}` : ''}</Badge>
           <Badge variant="default" className="text-xs px-2 py-0.5">{formattedScore}</Badge>
         </div>
 
-        {/* Text area */}
         <div className="relative flex-1">
           {shouldShowExpandButton && (
             <Button

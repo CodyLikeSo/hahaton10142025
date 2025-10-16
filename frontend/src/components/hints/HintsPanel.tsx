@@ -19,7 +19,6 @@ export function HintsPanel({ hints, onHintSelect }: HintsPanelProps) {
     <div className="p-4 border-t border-gray-200 bg-gray-50 overflow-auto max-h-72">
       <div className="space-y-2">
         <h3 className="text-sm font-medium text-black mb-4">AI Suggestions</h3>
-        {/* Добавил className Для первой подсказки */}
         {displayedHints.map((hint) => (
           <HintCard key={hint.id} hint={hint} onSelect={onHintSelect} className={hint.isBestVariant ? 'border-emerald-400 bg-emerald-50 hover:bg-emerald-100' : ''} />
         ))}

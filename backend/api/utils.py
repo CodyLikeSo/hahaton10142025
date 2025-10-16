@@ -9,7 +9,7 @@ def ask_qwen(question, prompt, key) -> str:
     url = "https://llm.t1v.scibox.tech/v1/chat/completions"
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
     payload = {
-        "model": "qwen2.5-72b-h100",
+        "model": "Qwen2.5-72B-Instruct-AWQ",
         "messages": [
             {"role": "system", "content": prompt},
             {"role": "user", "content": question},

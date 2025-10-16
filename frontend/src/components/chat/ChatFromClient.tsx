@@ -11,11 +11,8 @@ interface ChatInputProps {
   disabled?: boolean;
   initialValue?: string;
   onValueChange?: (value: string) => void;
-  // Controlled sparkle (optional). If provided, ChatInput will use these props
-  // to toggle the global HintsPanel instead of showing its own tooltip.
   isSparkleOpen?: boolean;
   onToggleSparkle?: () => void;
-  // Optional external ref to focus the textarea
   inputRef?: React.RefObject<HTMLTextAreaElement | null>;
 }
 
@@ -33,7 +30,6 @@ export function ChatInput({
   const [isSparkleOpenLocal, setIsSparkleOpenLocal] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Update internal state when external value changes
   useEffect(() => {
     setMessage(initialValue);
   }, [initialValue]);
@@ -57,7 +53,7 @@ export function ChatInput({
 
   const toggleSparkle = (e: React.MouseEvent) => {
     e.preventDefault();
-    // If parent provided a controlled toggle, use that. Otherwise toggle local state.
+
     if (typeof onToggleSparkle === "function") {
       onToggleSparkle();
     } else {
@@ -73,12 +69,11 @@ export function ChatInput({
     }
   };
 
-  // Auto-resize textarea with 4 line limit
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       const scrollHeight = textareaRef.current.scrollHeight;
-      const maxHeight = 4 * 20; // 4 lines * 20px per line
+      const maxHeight = 4 * 20;
       textareaRef.current.style.height = `${Math.min(scrollHeight, maxHeight)}px`;
     }
   }, [message]);
@@ -105,25 +100,20 @@ export function ChatInput({
           <Sparkle className="h-4 w-4" />
         </Button>
 
-        {/* Only show the local tooltip when this component is uncontrolled for sparkle */}
         {typeof isSparkleOpenProp === "undefined" && isSparkleOpenLocal && (
           <div className="absolute right-0 bottom-full mb-2 w-64 bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-lg z-10">
             <div className="text-sm text-gray-200">Sparkle options or suggestions go here.</div>
-            {/* Add interactive content here as needed */}
           </div>
         )}
       </div>
 
       <Textarea
         ref={(el: HTMLTextAreaElement) => {
-          // wire internal ref for resize behavior
           textareaRef.current = el;
-          // and wired external ref if provided
           if (inputRef) {
             try {
               (inputRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = el;
             } catch (e) {
-              // ignore if inputRef is a callback ref or otherwise
             }
           }
         }}

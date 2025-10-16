@@ -16,20 +16,16 @@ export function ChatContainer({ messages, category, title, isClientView = false 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const lastMessageRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive
   useLayoutEffect(() => {
     const scrollToBottom = () => {
-      // Preferred: scroll the last message into view (works well with dynamic heights)
       if (lastMessageRef.current) {
         try {
           lastMessageRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
           return;
         } catch (e) {
-          // fall through to manual scroll if scrollIntoView fails
         }
       }
 
-      // Fallback: set scrollTop on the Radix viewport
       if (scrollAreaRef.current) {
         const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
         if (scrollContainer) {
@@ -38,7 +34,6 @@ export function ChatContainer({ messages, category, title, isClientView = false 
       }
     };
 
-    // Run synchronously after DOM mutations so initial mocked messages align bottom
     scrollToBottom();
   }, [messages]);
 
