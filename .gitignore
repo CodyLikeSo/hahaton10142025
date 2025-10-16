@@ -7,3 +7,4 @@ data
 .env
 .vscode
 __pycache__
+frontend/new_src
