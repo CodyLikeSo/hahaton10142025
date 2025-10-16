@@ -12,6 +12,7 @@ export interface Hint {
   category: string;
   subcategory: string;
   isExpanded?: boolean;
+  score?: number | string;
 }
 
 export interface ChatData {

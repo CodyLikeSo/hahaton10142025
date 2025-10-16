@@ -17,7 +17,7 @@ export function HintCard({ hint, onSelect, className }: HintCardProps) {
   const [isExpanded, setIsExpanded] = useState(hint.isExpanded || false);
 
   // Check if text exceeds 3 lines (approximately 150 characters)
-  const fullText = hint.category + ' > ' + hint.subcategory + ': ' + hint.text; /** Добавил текст категории и подкатегории в подсказку */
+  const fullText = hint.category + ' | ' + hint.subcategory + ' | ' + hint.score + ' | ' + hint.text;
   const shouldShowExpandButton = fullText.length > 150;
   const displayText = shouldShowExpandButton && !isExpanded ? fullText.substring(0, 150) + '...' : fullText;
 

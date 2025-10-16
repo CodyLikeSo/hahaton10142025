@@ -35,7 +35,6 @@ export default function Home() {
       setShowHints(false);
       setLoading(true);
 
-      // Реальный запрос к FastAPI
       const response = await fetch('http://127.0.0.1:8000/request/', {
         method: 'POST',
         headers: {
@@ -57,6 +56,7 @@ export default function Home() {
       const modelAnswerId = data.model_answer;
       const mainOption = data.options.find((opt) => opt.id === modelAnswerId);
       const otherOptions = data.options.filter((opt) => opt.id !== modelAnswerId);
+      const objectScore = data.options.find((opt) => opt.score)
       const orderedOptions = mainOption ? [mainOption, ...otherOptions] : data.options;
 
       const hintList: Hint[] = orderedOptions.map((opt, index) => ({
@@ -65,6 +65,7 @@ export default function Home() {
         isBestVariant: opt.id === modelAnswerId,
         category: opt.payload['Основная категория'] || '',
         subcategory: opt.payload['Подкатегория'] || '',
+        score: opt.score !== undefined && opt.score !== null ? opt.score : 'no score'
       }));
 
       const newItem: ResponseItem = {
